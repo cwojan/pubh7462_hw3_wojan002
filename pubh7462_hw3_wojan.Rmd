@@ -11,7 +11,6 @@ output: github_document
 library(tidyverse)
 library(janitor)
 library(gt)
-library(viridis)
 
 ## Working directory for .RMD
 knitr::opts_knit$set(echo = TRUE,
@@ -122,11 +121,53 @@ instacart %>%
        title = "Top Six Aisles in Top Six Departments by Sales") +
   theme(axis.text.y = element_blank(), axis.ticks.y = element_blank(),
         panel.spacing.x = unit(6, "mm"))
-  
-
-
-
 
 ```
+
+### Problem 3.4
+
+Note: While the five aisles in the table are the top five most popular aisles sales-wise, they are ordered within the table by the total sales of only their top five products.
+
+```{r prob_3.4, echo=TRUE, message=FALSE}
+
+aisle_products <- instacart %>%
+  count(aisle, product_name) %>%
+  mutate(aisle = str_to_title(aisle),
+         aisle = factor(aisle),
+         aisle = fct_reorder(.f = aisle, .x = n, .fun = sum, .desc = TRUE)) %>%
+  filter(aisle %in% levels(aisle)[1:5]) %>%
+  group_by(aisle) %>%
+  arrange(desc(n), .by_group = TRUE) %>%
+  mutate(product_ord = row_number()) %>%
+  filter(product_ord < 6) %>%
+  ungroup() %>%
+  mutate(aisle = factor(as.character(aisle)),
+         aisle = fct_reorder(.f = aisle, .x = n, .fun = sum, .desc = TRUE)) %>%
+  arrange(aisle, desc(n)) %>%
+  select(aisle, product_name, n) %>%
+  rename(Product = product_name,
+         Sales = n)
+
+max_sales <- max(aisle_products$Sales)
+
+aisle_products %>%
+  group_by(aisle) %>%
+  gt() %>%
+  tab_header(title = "Top 5 Products from Top 5 Aisles in Products Sold") %>%
+  data_color(columns = Sales,
+             colors = scales::col_numeric(
+               palette = c("white", "blue"),
+               domain = c(0, max_sales)
+             )
+  ) %>%
+  as_raw_html()
+  
+```
+
+
+
+
+
+
 
 
