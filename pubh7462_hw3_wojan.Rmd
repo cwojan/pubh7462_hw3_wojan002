@@ -1,0 +1,74 @@
+---
+title: "PUBH 7462 Homework 3"
+author: "Chris Wojan"
+date: "2/16/2022"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+
+## Load libraries
+library(tidyverse)
+library(janitor)
+library(gt)
+
+## Working directory for .RMD
+knitr::opts_knit$set(echo = TRUE,
+                     root.dir = rprojroot::find_rstudio_root_file())
+
+## Set knitr options
+knitr::opts_chunk$set(echo = TRUE)
+
+## Set Theme for ggplot2 - centers title and legend at bottom by default
+theme_set(theme_bw() + 
+          theme(plot.title = element_text(hjust = 0.5), legend.position = "bottom"))
+
+## Set Scientific notation output and decimal places for knitr
+options(scipen = 999)
+options(digits = 4)
+
+```
+
+### Setup
+
+```{r read_data, echo = TRUE, message = FALSE}
+
+## Read in the data
+instacart <- read_csv("./data/instacart.csv")
+
+```
+
+### Problem 3.1
+
+```{r prob_3.1, echo = TRUE, message = FALSE}
+
+sample <- as.numeric(sample(levels(factor(instacart$order_id)), 20))
+
+instacart %>%
+  filter(order_id %in% sample) %>%
+  group_by(order_id) %>%
+  summarise("Days Since Last Order" = days_since_prior_order,
+            "Number of Items" = n(),
+            "Number of Aisles" = length(unique(aisle_id)),
+            "Number of Departments" = length(unique(department_id)),
+            "Order Number" = order_number,
+            "Percent of Items Reordered" = sum(reordered)/n()) %>%
+  unique() %>%
+  ungroup() %>%
+  pivot_longer(cols = -order_id, names_to = "variable", values_to = "value") %>%
+  group_by(variable) %>%
+  summarise(Mean = mean(value),
+            Median = median(value),
+            S.D. = sd(value)) %>%
+  rename("Order Characteristic" = variable) %>%
+  gt() %>%
+  tab_header(title = "Summary of Orders") %>%
+  as_raw_html()
+
+```
+
+### Problem 3.2
+
+
+
+
