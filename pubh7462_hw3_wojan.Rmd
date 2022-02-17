@@ -69,6 +69,28 @@ instacart %>%
 
 ### Problem 3.2
 
+```{r prob_3.2, echo = TRUE, message = FALSE, fig.height = 16, fig.width = 8}
+
+instacart %>%
+  count(aisle) %>%
+  ungroup() %>%
+  mutate(aisle = str_to_title(aisle),
+         aisle = factor(aisle),
+         aisle = fct_reorder(aisle, n)) %>%
+  ggplot() +
+  geom_point(aes(x = n, y = aisle, color = n)) +
+  geom_segment(aes(x = 0, xend = n, y = aisle, yend = aisle, color = n)) +
+  scale_color_continuous(name = "Total Number of of Products Sold") +
+  scale_x_continuous(expand = expansion(mult = c(0, 0.025))) +
+  labs(x = "Total Number of of Products Sold",
+       y = "Aisle",
+       title = "Store Aisles by Product Sales") +
+  theme(legend.key.width = unit(2, "cm"))
+
+```
+
+### Problem 3.3
+
 
 
 
