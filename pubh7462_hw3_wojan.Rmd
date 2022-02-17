@@ -11,6 +11,7 @@ output: github_document
 library(tidyverse)
 library(janitor)
 library(gt)
+library(viridis)
 
 ## Working directory for .RMD
 knitr::opts_knit$set(echo = TRUE,
@@ -91,6 +92,41 @@ instacart %>%
 
 ### Problem 3.3
 
+```{r prob_3.3, echo = TRUE, message = FALSE}
 
+instacart %>%
+  count(department, aisle) %>%
+  mutate(aisle = str_to_title(aisle),
+         department = str_to_title(department),
+         department = factor(department),
+         department = fct_reorder(.f = department, .x = n, .fun = sum, .desc = TRUE)) %>%
+  filter(department %in% levels(department)[1:6]) %>%
+  group_by(department) %>%
+  arrange(desc(n), .by_group = TRUE) %>%
+  mutate(aisle_ord = row_number()) %>%
+  ungroup() %>%
+  filter(aisle_ord < 7) %>%
+  ggplot() +
+  geom_point(aes(x = n, y = aisle_ord, color = factor(aisle_ord))) +
+  geom_text(aes(x = 1000, y = aisle_ord + 0.5, label = aisle, color = factor(aisle_ord)), 
+            size = 2, hjust = "inward") +
+  geom_segment(aes(x = 0, xend = n, y = aisle_ord, yend = aisle_ord, color = factor(aisle_ord))) +
+  facet_wrap(vars(department)) +
+  scale_color_hue(h = c(100, 180), l = 50, c = 150,
+                   name = "Sales Rank within Department") +
+  scale_x_continuous(expand = expansion(mult = c(0, 0.025))) +
+  scale_y_continuous(trans = "reverse") +
+  guides(color = guide_legend(nrow = 1)) +
+  labs(x = "Number of of Products Sold",
+       y = "",
+       title = "Top Six Aisles in Top Six Departments by Sales") +
+  theme(axis.text.y = element_blank(), axis.ticks.y = element_blank(),
+        panel.spacing.x = unit(6, "mm"))
+  
+
+
+
+
+```
 
 
