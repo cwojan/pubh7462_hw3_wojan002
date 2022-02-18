@@ -106,7 +106,7 @@ instacart %>%
   labs(x = "Total Number of of Products Sold",
        y = "Aisle",
        title = "Store Aisles by Product Sales") +
-  theme(legend.key.width = unit(2, "cm"))
+  theme(legend.key.width = unit(1, "cm"))
 ```
 
 ![](pubh7462_hw3_wojan_files/figure-gfm/prob_3.2-1.png)<!-- -->
@@ -143,15 +143,15 @@ instacart %>%
   facet_wrap(vars(department)) +
   ## Set visual style of plot
   scale_color_hue(h = c(100, 180), l = 50, c = 150,
-                   name = "Sales Rank within Department") +
+                   name = "Sales Rank \nwithin Department") +
   scale_x_continuous(expand = expansion(mult = c(0, 0.025))) +
   scale_y_continuous(trans = "reverse") +
-  guides(color = guide_legend(nrow = 1)) +
+  guides(color = guide_legend(nrow = 6)) +
   labs(x = "Number of of Products Sold",
        y = "",
        title = "Top Six Aisles in Top Six Departments by Sales") +
   theme(axis.text.y = element_blank(), axis.ticks.y = element_blank(),
-        panel.spacing.x = unit(6, "mm"))
+        panel.spacing.x = unit(6, "mm"), legend.position = "right")
 ```
 
 ![](pubh7462_hw3_wojan_files/figure-gfm/prob_3.3-1.png)<!-- -->
