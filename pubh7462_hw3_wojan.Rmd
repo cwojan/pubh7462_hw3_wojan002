@@ -42,10 +42,9 @@ instacart <- read_csv("./data/instacart.csv")
 
 ```{r prob_3.1, echo = TRUE, message = FALSE}
 
-sample <- as.numeric(sample(levels(factor(instacart$order_id)), 20))
-
+## Draw table from data
 instacart %>%
-  filter(order_id %in% sample) %>%
+  ## Group by order and calculate order chracteristics
   group_by(order_id) %>%
   summarise("Days Since Last Order" = days_since_prior_order,
             "Number of Items" = n(),
@@ -53,13 +52,17 @@ instacart %>%
             "Number of Departments" = length(unique(department_id)),
             "Order Number" = order_number,
             "Percent of Items Reordered" = sum(reordered)/n()) %>%
+  ## Filter out duplicates and ungroup
   unique() %>%
   ungroup() %>%
+  ## Change data from wide to long; collecting each order variable into a single column 
   pivot_longer(cols = -order_id, names_to = "variable", values_to = "value") %>%
+  ## Calculate summary statistics across all orders
   group_by(variable) %>%
   summarise(Mean = mean(value),
             Median = median(value),
             S.D. = sd(value)) %>%
+  ## Rename column and create titled table
   rename("Order Characteristic" = variable) %>%
   gt() %>%
   tab_header(title = "Summary of Orders") %>%
@@ -71,15 +74,19 @@ instacart %>%
 
 ```{r prob_3.2, echo = TRUE, message = FALSE, fig.height = 16, fig.width = 8}
 
+## Draw plot from data
 instacart %>%
+  ## Determine number of sales from each aisle, and order the aisles by that value
   count(aisle) %>%
-  ungroup() %>%
   mutate(aisle = str_to_title(aisle),
          aisle = factor(aisle),
          aisle = fct_reorder(aisle, n)) %>%
+  ## Draw plot
   ggplot() +
+  ## Draw "lollipop" plot of sales by aisle
   geom_point(aes(x = n, y = aisle, color = n)) +
   geom_segment(aes(x = 0, xend = n, y = aisle, yend = aisle, color = n)) +
+  ## Set visual style of plot
   scale_color_continuous(name = "Total Number of of Products Sold") +
   scale_x_continuous(expand = expansion(mult = c(0, 0.025))) +
   labs(x = "Total Number of of Products Sold",
@@ -93,24 +100,34 @@ instacart %>%
 
 ```{r prob_3.3, echo = TRUE, message = FALSE}
 
+## Draw plot from data
 instacart %>%
+  ## Determine number of sales by aisle and department
   count(department, aisle) %>%
+  ## Reformat aisle/dept names, order department factor by number of sales
   mutate(aisle = str_to_title(aisle),
          department = str_to_title(department),
          department = factor(department),
          department = fct_reorder(.f = department, .x = n, .fun = sum, .desc = TRUE)) %>%
+  ## Take only the top 6 departments by sales
   filter(department %in% levels(department)[1:6]) %>%
+  ## Sort aisles by number of sales within department
   group_by(department) %>%
   arrange(desc(n), .by_group = TRUE) %>%
   mutate(aisle_ord = row_number()) %>%
   ungroup() %>%
+  ## Take only the top 6 aisles by sales for each department
   filter(aisle_ord < 7) %>%
+  ## Draw plot
   ggplot() +
+  ## Draw labelled lollipops for each aisle
   geom_point(aes(x = n, y = aisle_ord, color = factor(aisle_ord))) +
-  geom_text(aes(x = 1000, y = aisle_ord + 0.5, label = aisle, color = factor(aisle_ord)), 
+  geom_text(aes(x = 2000, y = aisle_ord + 0.5, label = aisle, color = factor(aisle_ord)), 
             size = 2, hjust = "inward") +
   geom_segment(aes(x = 0, xend = n, y = aisle_ord, yend = aisle_ord, color = factor(aisle_ord))) +
+  ## Separate plot into panels for each of 6 departments
   facet_wrap(vars(department)) +
+  ## Set visual style of plot
   scale_color_hue(h = c(100, 180), l = 50, c = 150,
                    name = "Sales Rank within Department") +
   scale_x_continuous(expand = expansion(mult = c(0, 0.025))) +
@@ -130,30 +147,42 @@ Note: While the five aisles in the table are the top five most popular aisles sa
 
 ```{r prob_3.4, echo=TRUE, message=FALSE}
 
+## Create tibble of top 5 aisles, top 5 products, by sales
 aisle_products <- instacart %>%
+  ## Determine number of sales by product and aisle
   count(aisle, product_name) %>%
+  ## Order aisle factor by total sales
   mutate(aisle = str_to_title(aisle),
          aisle = factor(aisle),
          aisle = fct_reorder(.f = aisle, .x = n, .fun = sum, .desc = TRUE)) %>%
+  ## Take only the top 5 aisle by sales
   filter(aisle %in% levels(aisle)[1:5]) %>%
+  ## Sort the products by number of sales within aisles
   group_by(aisle) %>%
   arrange(desc(n), .by_group = TRUE) %>%
   mutate(product_ord = row_number()) %>%
+  ## Take only the top 5 products for each of 5 aisles
   filter(product_ord < 6) %>%
   ungroup() %>%
+  ## Reorder the aisle factor now by total sales only including each aisle's top 5 products
   mutate(aisle = factor(as.character(aisle)),
          aisle = fct_reorder(.f = aisle, .x = n, .fun = sum, .desc = TRUE)) %>%
   arrange(aisle, desc(n)) %>%
+  ## Make table better for visual presentation
   select(aisle, product_name, n) %>%
   rename(Product = product_name,
          Sales = n)
 
+## Determine highest value of sales among products
 max_sales <- max(aisle_products$Sales)
 
+## Draw table from aisle/product data
 aisle_products %>%
+  ## Group the table into subtabs for each aisle
   group_by(aisle) %>%
   gt() %>%
   tab_header(title = "Top 5 Products from Top 5 Aisles in Products Sold") %>%
+  ## Color sales tabs by amount
   data_color(columns = Sales,
              colors = scales::col_numeric(
                palette = c("white", "blue"),
